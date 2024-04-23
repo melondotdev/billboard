@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import BillboardSectionPixel from './BillboardSectionPixel';
 import hexToRgb from '../Utils/hexToRgb';
 
-const Billboard = ({ setConvertedChanges, selectedColor, setSelectedColor }) => {
+const Billboard = ({ setConvertedChanges, selectedColor, isUndoing, setIsUndoing }) => {
   // ===== Update Changes =====
+
   const [updatedChanges, setUpdatedChanges] = useState([]); // Array to store colors for each section
   
   const handleUpdateChanges = (change) => {
@@ -72,20 +73,43 @@ const Billboard = ({ setConvertedChanges, selectedColor, setSelectedColor }) => 
     });
   };
   
+  // ===== undo last change =====
+
+  const [lastChange, setLastChange] = useState();
+  
+  useEffect(() => {
+    if (isUndoing) {
+      if (updatedChanges.length > 0) {
+        const lastChange = updatedChanges[updatedChanges.length - 1];
+
+        const newChanges = updatedChanges.slice(0, -1); // Copy all items except the last one
+        setUpdatedChanges(newChanges); // Update the state with the new array
+        
+        const pixelIndex = Number(lastChange.row) * 60 + Number(lastChange.column);
+        setLastChange({
+          sectionIndex: lastChange.sectionIndex,
+          pixelIndex: pixelIndex,
+          oldColor: lastChange.color // Assuming you want to revert to the previous color stored here
+        });
+      }
+      setIsUndoing(false);
+    }
+  }, [isUndoing, setIsUndoing, updatedChanges])
+  
   return (
-    <>
-      <div className='grid grid-cols-2 flex-col border-2 border-white'>
-        {Array.from({ length: 4 }, (_, i) => (
-          <BillboardSectionPixel
-            key={i}
-            sectionIndex={i + 1}
-            selectedColor={selectedColor}
-            storeInitData={handleStoreData}
-            updateCurrentColors={handleUpdateChanges}
-          />
-        ))}
-      </div>
-    </>
+    <div className='grid grid-cols-2 max-w-[1204px] w-full border-2 border-white' style={{ minWidth: '1204px' }}>
+      {Array.from({ length: 4 }, (_, i) => (
+        <BillboardSectionPixel
+          key={i}
+          sectionIndex={i + 1}
+          selectedColor={selectedColor}
+          lastChange={lastChange}
+          setLastChange={setLastChange}
+          storeInitData={handleStoreData}
+          updateCurrentColors={handleUpdateChanges}
+        />
+      ))}
+    </div>
   )
 }
 

@@ -3,7 +3,7 @@ import fetchBillboardData from '../Utils/fetchBillboardData';
 import Pixel from './Pixel';
 import rgbToHex from '../Utils/rgbToHex';
 
-const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, updateCurrentColors }) => {
+const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, updateCurrentColors, lastChange, setLastChange }) => {
   const gridSize = 60 * 20; // Total pixels in a 30x20 grid
   const [colors, setColors] = useState(Array(gridSize).fill('#000')); // Initialize all pixels to black
   
@@ -63,6 +63,20 @@ const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, upd
     updateCurrentColors(change);
   }
   
+  // ===== Listen for Undo =====
+  
+  const [undoPixelParameters, setUndoPixelParameters] = useState();
+  
+  useEffect(() => {
+    if (lastChange) {
+      if (lastChange.sectionIndex === sectionIndex) {
+        const undoIndex = lastChange.pixelIndex;
+        setUndoPixelParameters({location: undoIndex});
+        setLastChange({});
+      }
+    }
+  }, [lastChange, sectionIndex, setLastChange, undoPixelParameters])
+  
   return (
     <div
       style={{ display: 'grid', gridTemplateColumns: 'repeat(60, 10px)' }}
@@ -72,6 +86,8 @@ const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, upd
           key={index}
           initColor={color}
           location={index}
+          undoPixelParameters={undoPixelParameters || {}}
+          setUndoPixelParameters={setUndoPixelParameters}
           selectedColor={selectedColor}
           updateCurrentColor={handleUpdateCurrentColor}
         />

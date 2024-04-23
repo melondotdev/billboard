@@ -1,27 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import "./styles.css";
 
-const Pixel = ({ initColor, location, selectedColor, updateCurrentColor }) => {
+const Pixel = ({ initColor, location, selectedColor, updateCurrentColor, undoPixelParameters }) => {
   const [color, setColor] = useState(initColor);
+  const [colorChangeHistory, setColorChangeHistory] = useState([])
+
+  useEffect(() => {
+    // This will log the color change history every time it updates
+    console.log(colorChangeHistory);
+  }, [colorChangeHistory]); // Dependency array includes colorChangeHistory
+  
+  useEffect(() => {
+    // This will log the color change history every time it updates
+    if (undoPixelParameters.location === location) {
+      const undoneHistory = colorChangeHistory.pop();
+      setColor(undoneHistory);
+    }
+  }, [undoPixelParameters, location, colorChangeHistory]); // Dependency array includes colorChangeHistory
   
   const changeColor = (e) => {
-    // check for right click
+    // Check for right click
     if (e.buttons === 2) {
-      
+      // Handle right-click if necessary
     } else {
-      setColor(selectedColor);
-      updateCurrentColor(location, selectedColor);
+      updateColor(selectedColor);
     }
-  }
+  };
   
   const changeColorDraw = (e) => {
-    if (e.buttons === 1 || e.buttons === 3) {
-      setColor(selectedColor);
-      updateCurrentColor(location, selectedColor);
+    if (e.buttons === 1 || e.buttons === 3) { // Left click or both buttons
+      updateColor(selectedColor);
     }
-  }
+  };
   
+  // Unified function to update color
+  const updateColor = (newColor) => {
+    const oldColor = color;
+    if (newColor !== oldColor) { // Only change color if it is different from the current color
+      setColor(newColor);
+      setColorChangeHistory(prevState => [...prevState, oldColor]); // Add the old color to history
+      updateCurrentColor(location, newColor, oldColor);
+    }
+  };
+
   const pixelStyle = {
     backgroundColor: color,
     border: '1px dotted rgba(0, 145, 255, 0.25)',

@@ -23,12 +23,13 @@ const Home = () => {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletData, setWalletData] = useState({});
   const [selectedColor, setSelectedColor] = useState('#000000');
+  const [isUndoing, setIsUndoing] = useState(false);
   
   // ===== Media Queries =====
   
   const isMobile = useMediaQuery({ query: '(max-width: 900px)' });
   
-  // Listener for wallet connection status
+  // ===== Listener for wallet connection status =====
   
   const { currentWallet, connectionStatus } = useCurrentWallet();
   
@@ -62,7 +63,7 @@ const Home = () => {
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [connectionStatus, currentWallet]);
   
-  // ===== Listener for billboard modifications =====
+  // ===== Sign & Execute Transaction =====
   
   const [isLoading, setIsLoading] = useState(false);
   const [txId, setTxId] = useState('');
@@ -71,14 +72,14 @@ const Home = () => {
   
   const saveColors = (e) => {
     e.preventDefault();
-    console.log(convertedChanges);
     purchasePixels(convertedChanges);
   }
   
   const purchasePixels = useCallback(async (convertedChanges) => {
     if (connectionStatus === 'disconnected') return;
     
-    setIsLoading(true); // Set loading state
+    setIsLoading(true); 
+    console.log(convertedChanges);
   
     try {
       const transactionBlock = new TransactionBlock();
@@ -146,6 +147,12 @@ const Home = () => {
     reset()
   }, [reset])
   
+  // ===== Undo Color Change =====
+  
+  const undoChange = () => {
+    setIsUndoing(true);
+  }
+  
   return (
     <div className='home w-screen h-screen font-anton bg-cover bg-top text-white bg-no-repeat bg-darkblue overflow-y-auto'>
       <Navbar walletData={walletData} isWalletConnected={isWalletConnected} />
@@ -153,7 +160,7 @@ const Home = () => {
         <>
           <div className='body w-screen flex items-stretch mt-2 px-4 z-0'>
             <div className='billboard'>
-              <Billboard setConvertedChanges={setConvertedChanges} selectedColor={selectedColor} setSelectedColor={setSelectedColor} />
+              <Billboard setConvertedChanges={setConvertedChanges} selectedColor={selectedColor} isUndoing={isUndoing} setIsUndoing={setIsUndoing} />
             </div>
             <div className='side-bar'> 
               <InfoBox convertedChanges={convertedChanges} />
@@ -191,6 +198,16 @@ const Home = () => {
             className={`select-color mt-4 col-span-2 mx-4 ${connectionStatus === 'disconnected' ? '' : 'cursor-pointer hover:opacity-70'}`}
           />
           <button 
+            onClick={undoChange} 
+            disabled={connectionStatus === 'disconnected'} 
+            style={{ marginTop: '10px' }}
+            data-tooltip-id="connect-first" 
+            data-tooltip-content="You have to connect your wallet first!"
+            className={`mt-4 mr-4 ${connectionStatus === 'disconnected' ? 'opacity-50' : 'cursor-pointer hover:opacity-70'}`}
+          >
+            Undo
+          </button>
+          <button 
             onClick={saveColors} 
             disabled={connectionStatus === 'disconnected'} 
             data-tooltip-id="connect-first" 
@@ -207,7 +224,7 @@ const Home = () => {
         <>
           <div className='body w-screen flex items-stretch mt-2 px-4'>
             <div className='billboard'>
-              <Billboard setConvertedChanges={setConvertedChanges} selectedColor={selectedColor} setSelectedColor={setSelectedColor} />
+              <Billboard setConvertedChanges={setConvertedChanges} selectedColor={selectedColor} />
             </div>
             <div className='side-bar'> 
               <InfoBox convertedChanges={convertedChanges} />
