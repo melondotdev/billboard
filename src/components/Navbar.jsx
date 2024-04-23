@@ -42,7 +42,7 @@ const Navbar = ({ walletData, isWalletConnected }) => {
       <button className="text-3xl" onClick={() => setIsDisplayLeaderboard(!isDisplayLeaderboard)}>
         <MdIcons.MdLeaderboard />
       </button>
-      <Marquee className="w-full mx-16">
+      <Marquee className="w-full mx-16 z-0">
         Recent Purchases: @melondotdev purchased plot (3,4) for 0.1 Sui!
       </Marquee>
       <div className="navbar-right mr-4 flex min-w-36">

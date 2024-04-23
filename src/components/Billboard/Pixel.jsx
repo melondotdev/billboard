@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from "react";
 
-import "./styles.css";
-
 const Pixel = ({ initColor, location, selectedColor, updateCurrentColor, undoPixelParameters }) => {
   const [color, setColor] = useState(initColor);
   const [colorChangeHistory, setColorChangeHistory] = useState([])
-
-  useEffect(() => {
-    // This will log the color change history every time it updates
-    console.log(colorChangeHistory);
-  }, [colorChangeHistory]); // Dependency array includes colorChangeHistory
   
   useEffect(() => {
     // This will log the color change history every time it updates

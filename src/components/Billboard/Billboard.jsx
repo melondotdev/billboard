@@ -3,56 +3,9 @@ import BillboardSectionPixel from './BillboardSectionPixel';
 import hexToRgb from '../Utils/hexToRgb';
 
 const Billboard = ({ setConvertedChanges, selectedColor, isUndoing, setIsUndoing }) => {
-  // ===== Update Changes =====
-
-  const [updatedChanges, setUpdatedChanges] = useState([]); // Array to store colors for each section
-  
-  const handleUpdateChanges = (change) => {
-    if (initColors[change.sectionIndex - 1][change.pixelIndex] === change.currentColor) {
-      return;
-    } else {
-      const sectionIndex = change.sectionIndex;
-      const localRow = Math.floor(change.pixelIndex / 60);
-      const localCol = change.pixelIndex % 60;
-      // Convert color from hex to RGB
-      const color = hexToRgb(change.currentColor);
-      const updatedChange = { sectionIndex, color, row: localRow, column: localCol };
-    
-      // Correctly use setState to append to the existing array
-      setUpdatedChanges(prevChanges => [...prevChanges, updatedChange]);
-    }
-  };
-  
-  useEffect(() => {
-    const formatChanges = () => {
-      const formattedChanges = Array.from({ length: 4 }, () => ({
-        colors: [],
-        rows: [],
-        columns: []
-      }));
-      
-      updatedChanges.forEach(change => {
-        const { sectionIndex, color, row, column } = change;
-        formattedChanges[sectionIndex - 1].colors.push(color);
-        formattedChanges[sectionIndex - 1].rows.push(row);
-        formattedChanges[sectionIndex - 1].columns.push(column);
-      });
-
-      // Flatten the arrays to have them in the required format
-      const output = [];
-      formattedChanges.forEach(section => {
-        output.push(section.colors);
-        output.push(section.rows);
-        output.push(section.columns);
-      });
-      
-      return output;
-    };
-    
-    setConvertedChanges(formatChanges());
-  }, [updatedChanges, setConvertedChanges]);
   
   // ===== Store Init Data =====
+
   const [initColors, setInitColors] = useState([]); // Array to store colors for each section
   
   const handleStoreData = (sectionIndex, colors) => {
@@ -72,16 +25,79 @@ const Billboard = ({ setConvertedChanges, selectedColor, isUndoing, setIsUndoing
       return newColors;
     });
   };
+
+  // ===== Update Changes =====
+
+  const [updatedChanges, setUpdatedChanges] = useState([]); // Array to store colors for each section
+  
+  const handleUpdateChanges = (change) => {
+    if (initColors[change.sectionIndex - 1][change.pixelIndex] === change.currentColor) {
+      return;
+    } else {
+      const sectionIndex = change.sectionIndex;
+      const localRow = Math.floor(change.pixelIndex / 60);
+      const localCol = change.pixelIndex % 60;
+      // Convert color from hex to RGB
+      const color = hexToRgb(change.currentColor);
+      const fee = change.fee;
+      const updatedChange = { sectionIndex, color, row: localRow, column: localCol, fee };
+    
+      // Correctly use setState to append to the existing array
+      setUpdatedChanges(prevChanges => [...prevChanges, updatedChange]);
+    }
+  };
+  
+  useEffect(() => {
+    const formatChanges = () => {
+      const formattedChanges = Array.from({ length: 4 }, () => ({
+        colors: [],
+        rows: [],
+        columns: [],
+        fees: []
+      }));
+      
+      updatedChanges.forEach(change => {
+        const { sectionIndex, color, row, column, fee } = change;
+        const section = formattedChanges[sectionIndex - 1];
+        const existingIndex = section.rows.findIndex((r, idx) => r === row && section.columns[idx] === column);
+  
+        if (existingIndex !== -1) {
+          // Entry with same row and column already exists, update color and fee
+          section.colors[existingIndex] = color; // Update the color at the existing index
+          section.fees[existingIndex] = fee;     // Update the fee at the existing index
+        } else {
+          // No existing entry, push the original data
+          section.colors.push(color);
+          section.rows.push(row);
+          section.columns.push(column);
+          section.fees.push(fee);
+        }
+      });
+  
+      // Flatten the arrays to have them in the required format
+      const output = [];
+      formattedChanges.forEach(section => {
+        output.push(section.colors);
+        output.push(section.rows);
+        output.push(section.columns);
+        output.push(section.fees);
+      });
+      
+      return output;
+    };  
+    
+    setConvertedChanges(formatChanges());
+  }, [updatedChanges, setConvertedChanges]);
   
   // ===== undo last change =====
-
+  
   const [lastChange, setLastChange] = useState();
   
   useEffect(() => {
     if (isUndoing) {
       if (updatedChanges.length > 0) {
         const lastChange = updatedChanges[updatedChanges.length - 1];
-
+        
         const newChanges = updatedChanges.slice(0, -1); // Copy all items except the last one
         setUpdatedChanges(newChanges); // Update the state with the new array
         
@@ -97,7 +113,7 @@ const Billboard = ({ setConvertedChanges, selectedColor, isUndoing, setIsUndoing
   }, [isUndoing, setIsUndoing, updatedChanges])
   
   return (
-    <div className='grid grid-cols-2 max-w-[1204px] w-full border-2 border-white' style={{ minWidth: '1204px' }}>
+    <div className='grid grid-cols-2 max-w-[1206px] min-w-[1206px] w-full' style={{ border: '2px solid white', padding: '1px' }}>
       {Array.from({ length: 4 }, (_, i) => (
         <BillboardSectionPixel
           key={i}

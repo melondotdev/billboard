@@ -62,13 +62,13 @@ const Home = () => {
   
     return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, [connectionStatus, currentWallet]);
-  
-  // ===== Sign & Execute Transaction =====
-  
+
+  // ===== Fetch Data from Billboard, then Sign & Execute Tx =====
+
+  const [convertedChanges, setConvertedChanges] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [txId, setTxId] = useState('');
   const { mutate: signAndExecuteTransactionBlock } = useSignAndExecuteTransactionBlock();
-  const [convertedChanges, setConvertedChanges] = useState([]);
   
   const saveColors = (e) => {
     e.preventDefault();
@@ -94,7 +94,7 @@ const Home = () => {
   
       // Assume each section's data in convertedChanges is structured as 3 arrays per section
       for (let i = 0; i < 4; i++) { // For each section
-        const baseIndex = i * 3;
+        const baseIndex = i * 4;
         const colors = convertedChanges[baseIndex];
         const rows = convertedChanges[baseIndex + 1];
         const columns = convertedChanges[baseIndex + 2];
@@ -158,13 +158,8 @@ const Home = () => {
       <Navbar walletData={walletData} isWalletConnected={isWalletConnected} />
       {!isMobile ? (
         <>
-          <div className='body w-screen flex items-stretch mt-2 px-4 z-0'>
-            <div className='billboard'>
-              <Billboard setConvertedChanges={setConvertedChanges} selectedColor={selectedColor} isUndoing={isUndoing} setIsUndoing={setIsUndoing} />
-            </div>
-            <div className='side-bar'> 
-              <InfoBox convertedChanges={convertedChanges} />
-            </div>
+          <div className='body w-screen flex mt-2 px-4 z-0'>
+            <Billboard setConvertedChanges={setConvertedChanges} selectedColor={selectedColor} isUndoing={isUndoing} setIsUndoing={setIsUndoing} />
           </div>
           {isLoading ? (
             <div className="popup fixed top-0 left-0 w-full h-full text-white">
@@ -188,47 +183,53 @@ const Home = () => {
               )}
             </>
           )}
-          <input
-            type="color"
-            value={selectedColor}
-            disabled={connectionStatus === 'disconnected'} 
-            data-tooltip-id="connect-first" 
-            data-tooltip-content="You have to connect your wallet first!"
-            onChange={(e) => setSelectedColor(e.target.value)}
-            className={`select-color mt-4 col-span-2 mx-4 ${connectionStatus === 'disconnected' ? '' : 'cursor-pointer hover:opacity-70'}`}
-          />
-          <button 
-            onClick={undoChange} 
-            disabled={connectionStatus === 'disconnected'} 
-            style={{ marginTop: '10px' }}
-            data-tooltip-id="connect-first" 
-            data-tooltip-content="You have to connect your wallet first!"
-            className={`mt-4 mr-4 ${connectionStatus === 'disconnected' ? 'opacity-50' : 'cursor-pointer hover:opacity-70'}`}
-          >
-            Undo
-          </button>
-          <button 
-            onClick={saveColors} 
-            disabled={connectionStatus === 'disconnected'} 
-            data-tooltip-id="connect-first" 
-            data-tooltip-content="You have to connect your wallet first!"
-            className={`mt-4 ${connectionStatus === 'disconnected' ? 'opacity-50' : 'cursor-pointer hover:opacity-70'}`}
-          >       
-            Save Changes
-          </button>   
-          {connectionStatus === 'disconnected' && 
-            <Tooltip id="connect-first" place="top" effect="solid" className="font-sans z-50" />
-          }
+          <div className='info-bar w-full flex justify-between items-center max-w-[1214px]'>
+            <div 
+              className={`left-side flex items-end ${!isWalletConnected ? 'opacity-50' : ''}`}
+              data-tooltip-id="connect-first" 
+              data-tooltip-content="You have to connect your wallet first!"
+            >
+              <input
+                type="color"
+                value={selectedColor}
+                disabled={!isWalletConnected} 
+                onChange={(e) => setSelectedColor(e.target.value)}
+                className={`select-color mt-4 col-span-2 mx-4 ${!isWalletConnected ? '' : 'cursor-pointer hover:opacity-70'}`}
+              />
+              <button 
+                onClick={undoChange} 
+                disabled={!isWalletConnected} 
+                style={{ marginTop: '10px' }}
+                data-tooltip-id="connect-first" 
+                data-tooltip-content="You have to connect your wallet first!"
+                className={`mt-4 mr-4 ${!isWalletConnected ? '' : 'cursor-pointer hover:opacity-70'}`}
+              >
+                Undo
+              </button>
+            </div>
+            <div 
+              className={`right-side flex items-center ${!isWalletConnected ? 'opacity-50' : ''}`}
+              data-tooltip-id="connect-first" 
+              data-tooltip-content="You have to connect your wallet first!"
+            > 
+              <InfoBox convertedChanges={convertedChanges} isWalletConnected={isWalletConnected} />
+              <button 
+                onClick={saveColors} 
+                disabled={!isWalletConnected} 
+                className={`ml-8 mt-4 border-2 bg-ssblue ${!isWalletConnected ? '' : 'hover:bg-transparent hover:border-ssblue cursor-pointer'} py-1 px-4`}
+              >       
+                Purchase Tiles
+              </button>
+            </div>
+            {!isWalletConnected && 
+              <Tooltip id="connect-first" place="top" effect="solid" className="font-sans z-50" />
+            }
+          </div>
         </>
       ) : (
         <>
-          <div className='body w-screen flex items-stretch mt-2 px-4'>
-            <div className='billboard'>
-              <Billboard setConvertedChanges={setConvertedChanges} selectedColor={selectedColor} />
-            </div>
-            <div className='side-bar'> 
-              <InfoBox convertedChanges={convertedChanges} />
-            </div>
+          <div className='body w-screen flex mt-2 px-4'>
+            <Billboard setConvertedChanges={setConvertedChanges} selectedColor={selectedColor} />
           </div>    
           {isLoading ? (
             <div className="popup fixed top-0 left-0 z-10 w-full h-full text-white">
@@ -258,6 +259,9 @@ const Home = () => {
             onChange={(e) => setSelectedColor(e.target.value)}
             className='select-color mt-4 col-span-2 mx-4'
           />
+          <div className='side-bar'> 
+            <InfoBox convertedChanges={convertedChanges} />
+          </div>
           <button 
             onClick={saveColors} 
             disabled={connectionStatus === 'disconnected'} 
@@ -268,7 +272,7 @@ const Home = () => {
             Save Changes
           </button>
           {connectionStatus === 'disconnected' && 
-            <Tooltip id="connect-first" place="top" effect="solid" className="font-sans" />
+            <Tooltip id="connect-first" place="bottom" effect="solid" className="font-sans" />
           }
         </>
       )}

@@ -9,7 +9,7 @@ module suisnails::billboard {
   
   const INIT_COLOR: vector<u8> = vector<u8>[0,0,0];
   const INIT_OWNER: address = @0xdc9d3855fb66bb34abcd4c18338bca6c568b7beaf3870c5dd3f9d3441c2cf11d;
-  const INIT_FEE: u64 = 10_000_000;
+  const INIT_FEE: u64 = 1_000_000;
   
   struct Billboard has store, copy, drop {
     spaces: vector<vector<Option<Pixel>>>,

@@ -6,9 +6,10 @@ import rgbToHex from '../Utils/rgbToHex';
 const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, updateCurrentColors, lastChange, setLastChange }) => {
   const gridSize = 60 * 20; // Total pixels in a 30x20 grid
   const [colors, setColors] = useState(Array(gridSize).fill('#000')); // Initialize all pixels to black
+  const [fees, setFees] = useState(Array(gridSize).fill('1000000'));
   
   // ===== Load Blockchain Data and Store It =====
-
+  
   const [isLoading, setIsLoading] = useState(true); // State to track loading status
   
   useEffect(() => {
@@ -19,6 +20,8 @@ const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, upd
         const i = sectionIndex - 1;
         if (data[i] && data[i].pixels) {
           const currentColors = [...colors];
+          const currentFees = [...fees];
+          
           const nodes = data[i].pixels.flatMap((row) => 
             row.map((pixel) => ({
               owner: pixel.owner,
@@ -28,12 +31,13 @@ const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, upd
             }))
           );
           
-          // Update the colors based on fetched data
           nodes.forEach(node => {
             currentColors[node.index] = node.color;  // Update the color at each index
+            currentFees[node.index] = node.fee; // Update the fees at each index
           });
           
-          setColors(currentColors);  // Update the state with the new color data
+          setColors(currentColors); 
+          setFees(currentFees);
           storeInitData(sectionIndex, currentColors);
         }
       } catch (error) {
@@ -57,7 +61,7 @@ const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, upd
     if (colors[pixelIndex] === currentColor) {
       return;
     } else {
-      change = {sectionIndex, pixelIndex, currentColor};
+      change = {sectionIndex, pixelIndex, currentColor, fee: fees[pixelIndex]};
     }
     
     updateCurrentColors(change);
