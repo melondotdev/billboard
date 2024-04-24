@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import BillboardSectionPixel from './BillboardSectionPixel';
 import hexToRgb from '../Utils/hexToRgb';
 
-const Billboard = ({ setConvertedChanges, selectedColor, isUndoing, setIsUndoing }) => {
+const Billboard = ({ setConvertedChanges, selectedColor, isUndoing, setIsUndoing, setCurrentOwners, setRecentPurchases }) => {
   
   // ===== Store Init Data =====
-
+  
   const [initColors, setInitColors] = useState([]); // Array to store colors for each section
   
-  const handleStoreData = (sectionIndex, colors) => {
+  const handleStoreData = (sectionIndex, colors, owners) => {
     // Update the corresponding section colors array
     setInitColors(prevColors => {
       const newColors = [...prevColors];
@@ -24,10 +24,24 @@ const Billboard = ({ setConvertedChanges, selectedColor, isUndoing, setIsUndoing
       }
       return newColors;
     });
+    
+    setCurrentOwners((prevOwners) => {
+      const currentOwners = [...prevOwners];
+      if (currentOwners[sectionIndex - 1]) {
+        currentOwners[sectionIndex - 1] = owners;
+      } else {
+        // Ensure that the array is correctly initialized up to the needed index
+        while (currentOwners.length < sectionIndex) {
+          currentOwners.push(undefined); // Fill with undefined up to the needed index
+        }
+        currentOwners[sectionIndex - 1] = owners; // Initialize the correct index
+      }
+      return currentOwners;
+    })
   };
-
+  
   // ===== Update Changes =====
-
+  
   const [updatedChanges, setUpdatedChanges] = useState([]); // Array to store colors for each section
   
   const handleUpdateChanges = (change) => {
@@ -123,6 +137,7 @@ const Billboard = ({ setConvertedChanges, selectedColor, isUndoing, setIsUndoing
           setLastChange={setLastChange}
           storeInitData={handleStoreData}
           updateCurrentColors={handleUpdateChanges}
+          setRecentPurchases={setRecentPurchases}
         />
       ))}
     </div>

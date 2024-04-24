@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import fetchBillboardData from '../Utils/fetchBillboardData';
 import Pixel from './Pixel';
 import rgbToHex from '../Utils/rgbToHex';
+import fetchRecentBillboardPurchases from '../Utils/fetchRecentBillboardPurchases';
 
-const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, updateCurrentColors, lastChange, setLastChange }) => {
+const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, updateCurrentColors, lastChange, setLastChange, setRecentPurchases }) => {
   const gridSize = 60 * 20; // Total pixels in a 30x20 grid
   const [colors, setColors] = useState(Array(gridSize).fill('#000')); // Initialize all pixels to black
   const [fees, setFees] = useState(Array(gridSize).fill('1000000'));
+  const [owners, setOwners] = useState(Array(gridSize).fill('0x0'));
   
   // ===== Load Blockchain Data and Store It =====
   
@@ -18,9 +20,11 @@ const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, upd
       try {
         const data = await fetchBillboardData();
         const i = sectionIndex - 1;
+
         if (data[i] && data[i].pixels) {
           const currentColors = [...colors];
           const currentFees = [...fees];
+          const currentOwners = [...owners];
           
           const nodes = data[i].pixels.flatMap((row) => 
             row.map((pixel) => ({
@@ -34,12 +38,18 @@ const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, upd
           nodes.forEach(node => {
             currentColors[node.index] = node.color;  // Update the color at each index
             currentFees[node.index] = node.fee; // Update the fees at each index
+            currentOwners[node.index] = node.owner;
           });
           
           setColors(currentColors); 
           setFees(currentFees);
-          storeInitData(sectionIndex, currentColors);
+          setOwners(currentOwners);
+          storeInitData(sectionIndex, currentColors, currentOwners);
         }
+        
+        const events = await fetchRecentBillboardPurchases();
+        setRecentPurchases(events);
+
       } catch (error) {
         console.error('Failed to load data:', error);
       } finally {

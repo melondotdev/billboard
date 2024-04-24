@@ -32,12 +32,12 @@ const InfoBox = ({ convertedChanges, isWalletConnected }) => {
     setPurchaseCount(sortedData.length);
     setPurchasePrice(sortedData.reduce((acc, entry) => acc + entry.price, 0).toFixed(3));
   }, [convertedChanges]);
-
+  
   return (
     <div className='flex mt-4 flex-row items-center'>
       <h1 className='mr-4'>Pixels Selected: {purchaseCount}</h1>
       <h1
-        className='border-b-2 border-ssblue text-ssblue border-solid hover:opacity-70 cursor-pointer'
+        className={`border-b-2 border-ssblue text-ssblue border-solid ${isWalletConnected && ('hover:text-white hover:border-white cursor-pointer')}`}
         data-tooltip-id="cost"
         data-tooltip-content="*Price doesn't include transaction fees"
         onClick={() => setIsOpenPriceList(true)}
