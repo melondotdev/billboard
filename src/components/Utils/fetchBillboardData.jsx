@@ -33,7 +33,7 @@ const fetchBillboardData = async () => {
       
       const jsonData = await response.json();
       
-      const nodes = jsonData.data.object.asMoveObject.contents.json.section.spaces.map((row) => 
+      const nodes = jsonData.data.object.asMoveObject.contents.json.grid.spaces.map((row) => 
         row.map((subnode) => ({
           owner: subnode.owner,
           fee: subnode.fee,

@@ -12,12 +12,16 @@ import LoadingSnail from '../assets/loading_snail.gif';
 import { 
   BILLBOARD_SECTION_1, 
   BILLBOARD_SECTION_1_GAME, 
+  BILLBOARD_SECTION_1_MAINTAINER, 
   BILLBOARD_SECTION_2, 
   BILLBOARD_SECTION_2_GAME, 
+  BILLBOARD_SECTION_2_MAINTAINER, 
   BILLBOARD_SECTION_3, 
   BILLBOARD_SECTION_3_GAME, 
+  BILLBOARD_SECTION_3_MAINTAINER, 
   BILLBOARD_SECTION_4, 
-  BILLBOARD_SECTION_4_GAME
+  BILLBOARD_SECTION_4_GAME,
+  BILLBOARD_SECTION_4_MAINTAINER,
 } from '../lib/constants';
 import Leaderboard from '../components/Leaderboard';
 
@@ -82,16 +86,41 @@ const Home = () => {
     
     setIsLoading(true); 
     console.log(convertedChanges);
-  
+
+    // Initialize globalTotalFee to 0
+    let globalTotalFee = 0;
+    
+    // Calculate total fees across all sections
+    for (let i = 0; i < 4; i++) {
+      const baseIndex = i * 4;
+      const fees = convertedChanges[baseIndex + 3];
+      
+      // Check if fees is defined and is an array
+      if (Array.isArray(fees)) {
+        const sectionTotalFee = fees.reduce((acc, fee) => {
+          // Parse fee as a float or integer, depending on expected input
+          return acc + Number(fee);
+        }, 0);
+        globalTotalFee += sectionTotalFee;
+      }
+    }
+
+    // If no fees are needed, log and return immediately
+    if (globalTotalFee === 0) {
+      console.log("No changes to process, returning...");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const transactionBlock = new TransactionBlock();
   
       // Dynamic mapping of sections to their respective targets and objects
       const sectionConfigs = [
-        { target: `${BILLBOARD_SECTION_1}::billboard_game::take_action`, object: BILLBOARD_SECTION_1_GAME },
-        { target: `${BILLBOARD_SECTION_2}::billboard_game::take_action`, object: BILLBOARD_SECTION_2_GAME },
-        { target: `${BILLBOARD_SECTION_3}::billboard_game::take_action`, object: BILLBOARD_SECTION_3_GAME },
-        { target: `${BILLBOARD_SECTION_4}::billboard_game::take_action`, object: BILLBOARD_SECTION_4_GAME },
+        { target: `${BILLBOARD_SECTION_1}::billboard_game::take_action`, object: BILLBOARD_SECTION_1_GAME, maintainer: BILLBOARD_SECTION_1_MAINTAINER },
+        { target: `${BILLBOARD_SECTION_2}::billboard_game::take_action`, object: BILLBOARD_SECTION_2_GAME, maintainer: BILLBOARD_SECTION_2_MAINTAINER },
+        { target: `${BILLBOARD_SECTION_3}::billboard_game::take_action`, object: BILLBOARD_SECTION_3_GAME, maintainer: BILLBOARD_SECTION_3_MAINTAINER },
+        { target: `${BILLBOARD_SECTION_4}::billboard_game::take_action`, object: BILLBOARD_SECTION_4_GAME, maintainer: BILLBOARD_SECTION_4_MAINTAINER },
       ];
   
       // Assume each section's data in convertedChanges is structured as 3 arrays per section
@@ -100,21 +129,34 @@ const Home = () => {
         const colors = convertedChanges[baseIndex];
         const rows = convertedChanges[baseIndex + 1];
         const columns = convertedChanges[baseIndex + 2];
-  
-        // Only create a moveCall if the section has changes
-        if (colors.length > 0) {
-          const { target, object } = sectionConfigs[i];
-          transactionBlock.moveCall({
-            target: target,
-            typeArguments: [],
-            arguments: [
-              transactionBlock.object(object),
-              transactionBlock.pure(colors),
-              transactionBlock.pure(rows),
-              transactionBlock.pure(columns),
-              transactionBlock.pure(colors.length), // Number of changes in this section
-            ]
-          });
+        const fees = convertedChanges[baseIndex + 3];
+      
+        // Check if fees is defined and is an array
+        if (Array.isArray(fees) && fees.length > 0) {
+          const totalFee = fees.reduce((acc, fee) => acc + Number(fee), 0);
+
+          if (totalFee > 0 && colors.length > 0) {
+            const payment = transactionBlock.splitCoins(
+              transactionBlock.gas,
+              [transactionBlock.pure(totalFee)]
+            );
+            const coinVec = transactionBlock.makeMoveVec({ objects: [payment] });
+            
+            const { target, object, maintainer } = sectionConfigs[i];
+            transactionBlock.moveCall({
+              target: target,
+              typeArguments: [],
+              arguments: [
+                transactionBlock.object(object),
+                transactionBlock.pure(colors),
+                transactionBlock.pure(rows),
+                transactionBlock.pure(columns),
+                transactionBlock.pure(colors.length),
+                transactionBlock.pure(maintainer),
+                coinVec,
+              ]
+            });
+          }
         }
       }
   
@@ -165,8 +207,12 @@ const Home = () => {
   // }, [currentOwners])
 
   // ===== Marquee =====
-
+  
   const [recentPurchases, setRecentPurchases] = useState([]);
+  
+  const saveRecentPurchases = (events) => {
+    setRecentPurchases(prevPurchases => [...prevPurchases, events]); // Use a callback to access the most current state
+  }  
   
   // ===== Guide =====
   
@@ -202,7 +248,7 @@ const Home = () => {
               isUndoing={isUndoing} 
               setIsUndoing={setIsUndoing}
               setCurrentOwners={setCurrentOwners}
-              setRecentPurchases={setRecentPurchases}
+              setRecentPurchases={saveRecentPurchases}
             />
           </div>
           {isLoading ? (

@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import BillboardSectionPixel from './BillboardSectionPixel';
 import hexToRgb from '../Utils/hexToRgb';
+import { 
+  BILLBOARD_SECTION_1, 
+  BILLBOARD_SECTION_2, 
+  BILLBOARD_SECTION_3, 
+  BILLBOARD_SECTION_4, 
+} from '../../lib/constants';
 
 const Billboard = ({ setConvertedChanges, selectedColor, isUndoing, setIsUndoing, setCurrentOwners, setRecentPurchases }) => {
+  const sections = [BILLBOARD_SECTION_1, BILLBOARD_SECTION_2, BILLBOARD_SECTION_3, BILLBOARD_SECTION_4];
   
   // ===== Store Init Data =====
   
@@ -132,6 +139,7 @@ const Billboard = ({ setConvertedChanges, selectedColor, isUndoing, setIsUndoing
         <BillboardSectionPixel
           key={i}
           sectionIndex={i + 1}
+          section={sections[i]}
           selectedColor={selectedColor}
           lastChange={lastChange}
           setLastChange={setLastChange}

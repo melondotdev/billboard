@@ -20,11 +20,28 @@ const Navbar = ({ walletData, isWalletConnected, setIsDisplayLeaderboard, setIsD
     const lastFour = address.substring(address.length - 4); // Extract last four characters
     return `${firstFour}...${lastFour}`; // Concatenate with "..." in the middle
   };
-
+  
   const formattedPurchases = useMemo(() => {
-    if (recentPurchases && recentPurchases.length > 0) {
-      // Sort by timestamp in descending order and slice the first three
-      const sortedPurchases = recentPurchases
+    if (recentPurchases && recentPurchases.some(arr => arr.length > 0)) {
+      // Flatten the array of arrays
+      const flatPurchases = recentPurchases.flat();
+      
+      // Group by timestamp and sum purchaseCount
+      const groupedPurchases = flatPurchases.reduce((acc, purchase) => {
+        const dateKey = new Date(purchase.timestamp).toISOString();
+        if (!acc[dateKey]) {
+          acc[dateKey] = {
+            timestamp: purchase.timestamp,
+            purchaseCount: 0,
+            owner: purchase.owner
+          };
+        }
+        acc[dateKey].purchaseCount += purchase.purchaseCount;
+        return acc;
+      }, {});
+  
+      // Convert the grouped object back to array and sort
+      const sortedPurchases = Object.values(groupedPurchases)
         .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
         .slice(0, 3);
       
@@ -39,7 +56,7 @@ const Navbar = ({ walletData, isWalletConnected, setIsDisplayLeaderboard, setIsD
       ));
     }
     return 'No recent purchases.';
-  }, [recentPurchases]);
+  }, [recentPurchases]);  
   
   return (
     <div className="navbar flex justify-between items-center h-20 font-anton bg-transparent text-white z-10 max-w-[1224px]">

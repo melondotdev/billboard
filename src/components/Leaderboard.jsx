@@ -7,10 +7,13 @@ const Leaderboard = ({ setIsDisplayLeaderboard, currentOwners }) => {
   useEffect(() => {
     const countPixels = () => {
       const addressCount = {};
+      const ignoreAddress = '0xdc9d3855fb66bb34abcd4c18338bca6c568b7beaf3870c5dd3f9d3441c2cf11d';
       
       currentOwners.forEach(node => {
         node.forEach(address => {
-          addressCount[address] = (addressCount[address] || 0) + 1;
+          if (address !== ignoreAddress) {
+            addressCount[address] = (addressCount[address] || 0) + 1;
+          }
         });
       });
 

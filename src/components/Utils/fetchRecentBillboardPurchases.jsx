@@ -1,14 +1,14 @@
-const fetchRecentBillboardPurchases = async (afterCursor = null) => {
+const fetchRecentBillboardPurchases = async (sectionAddress, afterCursor = null) => {
   let events = [];
   let hasNextPage = true; // Reset hasNextPage for each section
   let endCursor = afterCursor;
-
+  
   let queryEvents = `query {
     events(
       first: 4
       ${endCursor ? `after: "${endCursor}"` : ''}
       filter: {
-        eventType: "0x9f27c683c36f765d6b2b89467de89800cbd3a34840caa30d7700a182edbc2d05::billboard_game::BillboardActionEvent"
+        eventType: "${sectionAddress}::billboard_game::BillboardActionEvent"
       }
     ) {
       pageInfo {
@@ -34,7 +34,7 @@ const fetchRecentBillboardPurchases = async (afterCursor = null) => {
 
       const jsonData = await response.json();
       hasNextPage = jsonData.data.events.pageInfo.hasNextPage; // Update hasNextPage based on the latest fetch
-
+      
       const nodes = jsonData.data.events.nodes.map((node) => ({
         timestamp: node.timestamp,
         owner: node.json.player, 
@@ -42,7 +42,7 @@ const fetchRecentBillboardPurchases = async (afterCursor = null) => {
       }));
 
       events.push(...nodes);
-
+      
       if (jsonData.data.events.pageInfo.endCursor) {
         endCursor = jsonData.data.events.pageInfo.endCursor;
         queryEvents = `query {
@@ -50,7 +50,7 @@ const fetchRecentBillboardPurchases = async (afterCursor = null) => {
             first: 4
             after: "${endCursor}"
             filter: {
-              eventType: "0x9f27c683c36f765d6b2b89467de89800cbd3a34840caa30d7700a182edbc2d05::billboard_game::BillboardActionEvent",
+              eventType: "${sectionAddress}::billboard_game::BillboardActionEvent",
             }
           ) {
             pageInfo {

@@ -4,7 +4,7 @@ import Pixel from './Pixel';
 import rgbToHex from '../Utils/rgbToHex';
 import fetchRecentBillboardPurchases from '../Utils/fetchRecentBillboardPurchases';
 
-const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, updateCurrentColors, lastChange, setLastChange, setRecentPurchases }) => {
+const BillboardSectionPixel = ({ selectedColor, sectionIndex, section, storeInitData, updateCurrentColors, lastChange, setLastChange, setRecentPurchases }) => {
   const gridSize = 60 * 20; // Total pixels in a 30x20 grid
   const [colors, setColors] = useState(Array(gridSize).fill('#000')); // Initialize all pixels to black
   const [fees, setFees] = useState(Array(gridSize).fill('1000000'));
@@ -47,7 +47,7 @@ const BillboardSectionPixel = ({ selectedColor, sectionIndex, storeInitData, upd
           storeInitData(sectionIndex, currentColors, currentOwners);
         }
         
-        const events = await fetchRecentBillboardPurchases();
+        const events = await fetchRecentBillboardPurchases(section);
         setRecentPurchases(events);
 
       } catch (error) {
