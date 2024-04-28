@@ -201,11 +201,7 @@ const Home = () => {
   
   const [isDisplayLeaderboard, setIsDisplayLeaderboard] = useState(false);
   const [currentOwners, setCurrentOwners] = useState([]); // Array to store owners for each section
-  
-  // useEffect(() => {
-  //   console.log(currentOwners);
-  // }, [currentOwners])
-
+ 
   // ===== Marquee =====
   
   const [recentPurchases, setRecentPurchases] = useState([]);
@@ -225,10 +221,13 @@ const Home = () => {
         isWalletConnected={isWalletConnected} 
         setIsDisplayLeaderboard={setIsDisplayLeaderboard} 
         setIsDisplayGuide={setIsDisplayGuide} 
-        recentPurchases={recentPurchases} 
+        recentPurchases={recentPurchases}
       />
       {isDisplayLeaderboard && (
-        <Leaderboard setIsDisplayLeaderboard={setIsDisplayLeaderboard} currentOwners={currentOwners} />
+        <Leaderboard 
+          setIsDisplayLeaderboard={setIsDisplayLeaderboard} 
+          currentOwners={currentOwners} 
+        />
       )}
       {isDisplayGuide && (
         <div className="popup fixed top-0 left-0 w-full h-full text-white">

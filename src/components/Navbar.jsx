@@ -88,9 +88,6 @@ const Navbar = ({ walletData, isWalletConnected, setIsDisplayLeaderboard, setIsD
       <div className="navbar-right mr-4 flex">
         {isWalletConnected && (
           <>
-            {/* <div className="mr-4 flex items-center justify-center">
-              Rank
-            </div> */}
             <div className="wallet-details flex font-inter items-center text-base bg-transparent cursor-pointer hover:text-ssblue" onClick={handleDisconnect}>
               <img src={SuiSymbol} alt='symbol' className="h-4 w-auto mr-1"></img>
               <p className="mr-4">{(parseInt(walletData?.Balance || 0) / 1000000000).toFixed(2).toString()}</p>
