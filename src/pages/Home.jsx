@@ -182,7 +182,7 @@ const Home = () => {
       console.log(error);
     }
   }, [connectionStatus, setIsLoading, setTxId, signAndExecuteTransactionBlock]);
-
+  
   const reset = useCallback(() => {
     setTxId(undefined)
   }, [])
@@ -196,7 +196,7 @@ const Home = () => {
   const undoChange = () => {
     setIsUndoing(true);
   }
-
+  
   // ===== Leaderboard =====
   
   const [isDisplayLeaderboard, setIsDisplayLeaderboard] = useState(false);

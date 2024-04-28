@@ -49,7 +49,7 @@ const Leaderboard = ({ setIsDisplayLeaderboard, currentOwners }) => {
           }
         });
       });
-
+      
       const sortedAddresses = Object.entries(addressCount).sort((a, b) => b[1] - a[1]);
       return sortedAddresses.map(([address, count], index) => ({
         rank: index + 1,
